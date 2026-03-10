@@ -1,3 +1,8 @@
+---
+title: Surfpool Cheatcodes
+description: Full reference for all surfnet_* RPC methods to manipulate time, accounts, and programs in a local Surfpool network during testing.
+---
+
 # Surfpool Cheatcodes Reference
 
 All 22 `surfnet_*` JSON-RPC methods available on the surfnet RPC endpoint (default `http://127.0.0.1:8899`).
