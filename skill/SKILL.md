@@ -115,9 +115,9 @@ Once connected, you have access to these tools:
 - **When** the user asks about Anchor macros, constraints, or version-specific behavior
 
 ## Progressive disclosure (read when needed)
-- Solana Kit (@solana/kit): [kit/kit.md](kit/kit.md) — plugin clients, quick start, common patterns
-- Kit Plugins & Composition: [kit/plugins.md](kit/plugins.md) — ready-to-use clients, custom client composition, available plugins
-- Kit Advanced: [kit/advanced.md](kit/advanced.md) — manual transactions, direct RPC, building plugins, domain-specific clients
+- Solana Kit (@solana/kit): [kit/overview.md](references/kit/overview.md) — plugin clients, quick start, common patterns
+- Kit Plugins & Composition: [kit/plugins.md](references/kit/plugins.md) — ready-to-use clients, custom client composition, available plugins
+- Kit Advanced: [kit/advanced.md](references/kit/advanced.md) — manual transactions, direct RPC, building plugins, domain-specific clients
 - UI + wallet + hooks: [frontend-framework-kit.md](references/frontend-framework-kit.md)
 - Kit ↔ web3.js boundary: [kit-web3-interop.md](references/kit-web3-interop.md)
 - Anchor programs: [programs-anchor.md](references/programs-anchor.md)

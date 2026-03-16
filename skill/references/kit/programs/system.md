@@ -5,6 +5,10 @@ description: Kit-compatible @solana-program/system client for account creation, 
 
 # System Program
 
+Solana's built-in program for creating accounts, transferring SOL, and managing durable nonces. Every on-chain account is created through this program.
+
+If using plugin clients, prefer `client.use(systemProgram())` for a fluent API. The low-level instructions below are for manual `pipe()` transaction building. See [overview.md](../overview.md) and [plugins.md](../plugins.md).
+
 Program address: `11111111111111111111111111111111`
 
 ```ts
@@ -14,6 +18,8 @@ import { SYSTEM_PROGRAM_ADDRESS } from '@solana-program/system';
 ## Account Types
 
 ### Nonce
+
+Durable nonces replace blockhash lifetimes — use for offline signing or delayed submission.
 
 ```ts
 import { fetchNonce, getNonceSize } from '@solana-program/system';
@@ -26,6 +32,8 @@ const nonce = await fetchNonce(rpc, nonceAddress);
 ## Key Instructions
 
 ### Create Account
+
+Allocates a new account with a given size and owner. Fund with enough lamports for rent-exemption (`getMinimumBalanceForRentExemption`).
 
 ```ts
 import { getCreateAccountInstruction } from '@solana-program/system';

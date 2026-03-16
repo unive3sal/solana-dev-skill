@@ -7,7 +7,7 @@ description: Manual transaction building with pipe composition, direct RPC clien
 
 This reference covers low-level patterns for when you need full control over the transaction lifecycle, direct RPC access, or want to build custom plugins and domain-specific clients.
 
-For most use cases, prefer the plugin clients in [kit.md](kit.md) and [plugins.md](plugins.md).
+For most use cases, prefer the plugin clients in [overview.md](overview.md) and [plugins.md](plugins.md).
 
 ---
 

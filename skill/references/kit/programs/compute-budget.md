@@ -11,9 +11,15 @@ Program address: `ComputeBudget111111111111111111111111111111`
 import { COMPUTE_BUDGET_PROGRAM_ADDRESS } from '@solana-program/compute-budget';
 ```
 
+Correctly budgeting compute units for your transaction increases the probability it gets accepted for processing. Without a declared CU limit, validators assume 200K CU per instruction. Since validators pack blocks to maximize throughput, they prefer transactions with tight budgets that clearly fit in remaining block space. Pairing a tight CU limit with a priority fee gives validators direct incentive to include your transaction. Total fee = base fee (5,000 lamports/sig) + (CU consumed × price per CU in micro-lamports).
+
 ## Instructions
 
 ### Set Compute Unit Limit
+
+If you're using `createClient`/`createLocalClient` from `@solana/kit-client-rpc`, CU estimation is handled automatically via `sendTransaction()` — you don't need this. Use the manual instructions below when building transactions with `pipe()` or when you need direct control. See [overview.md](../overview.md) and [plugins.md](../plugins.md).
+
+Always set based on simulation — overestimate wastes block space, underestimate fails the transaction.
 
 ```ts
 import { getSetComputeUnitLimitInstruction } from '@solana-program/compute-budget';
@@ -23,6 +29,8 @@ const ix = getSetComputeUnitLimitInstruction({ units: 200_000 });
 
 ### Set Compute Unit Price (Priority Fee)
 
+Price per CU in micro-lamports — higher values improve inclusion during congestion.
+
 ```ts
 import { getSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
 
@@ -31,6 +39,8 @@ const ix = getSetComputeUnitPriceInstruction({ microLamports: 1000n });
 
 ### Request Heap Frame
 
+Increases BPF heap beyond the default 32 KB — only needed when programs allocate large data structures (large account deserialization, Merkle trees, ZK proofs). Most transactions don't need this.
+
 ```ts
 import { getRequestHeapFrameInstruction } from '@solana-program/compute-budget';
 
@@ -38,6 +48,8 @@ const ix = getRequestHeapFrameInstruction({ bytes: 256 * 1024 }); // 256 KB
 ```
 
 ## CU Estimation Helpers
+
+Simulate before sending to set a tight CU limit and avoid overpaying on priority fees.
 
 ### Basic Estimator
 
@@ -91,6 +103,8 @@ const msg2 = updateOrAppendSetComputeUnitPriceInstruction(
 
 ## Full Pattern: Build, Estimate, Send
 
+Build with priority fee → estimate CU via simulation → refresh blockhash (simulation consumed time) → sign and send.
+
 ```ts
 import {
   pipe, createTransactionMessage, setTransactionMessageFeePayerSigner,
@@ -139,37 +153,10 @@ async function sendWithComputeBudget(rpc, rpcSubscriptions, signer, instruction)
 }
 ```
 
-## Priority Fee Strategy
+## Priority Fee Estimation
 
-```ts
-import { updateOrAppendSetComputeUnitPriceInstruction } from '@solana-program/compute-budget';
+Don't hardcode priority fees — use your RPC provider's fee estimation API to set competitive rates for current network conditions:
 
-// Exponential backoff on retry
-async function sendWithRetry(rpc, rpcSubscriptions, message, maxRetries = 3) {
-  const sendAndConfirm = sendAndConfirmTransactionFactory({ rpc, rpcSubscriptions });
-  let currentMessage = message;
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      // Increase priority fee each retry
-      currentMessage = updateOrAppendSetComputeUnitPriceInstruction(
-        (current) => {
-          const base = current ?? 1000n;
-          return base * BigInt(2 ** i); // 1000, 2000, 4000...
-        },
-        currentMessage
-      );
-
-      // Refresh blockhash
-      const { value: blockhash } = await rpc.getLatestBlockhash().send();
-      currentMessage = setTransactionMessageLifetimeUsingBlockhash(blockhash, currentMessage);
-
-      const signed = await signTransactionMessageWithSigners(currentMessage);
-      assertIsTransactionWithBlockhashLifetime(signed);
-      return await sendAndConfirm(signed, { commitment: 'confirmed' });
-    } catch (e) {
-      if (i === maxRetries - 1) throw e;
-    }
-  }
-}
-```
+- [Helius Priority Fee API](https://docs.helius.dev/solana-apis/priority-fee-api)
+- [QuickNode Priority Fee Add-on](https://marketplace.quicknode.com/add-on/solana-priority-fee)
+- [Triton Priority Fees API](https://docs.triton.one/chains/solana/improved-priority-fees-api)

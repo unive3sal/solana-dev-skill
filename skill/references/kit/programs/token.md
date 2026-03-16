@@ -5,6 +5,10 @@ description: Kit-compatible @solana-program/token client for mint creation, tran
 
 # SPL Token Program
 
+Solana's standard token program. Defines Mints (token config + supply) and Token Accounts (per-owner balances). For tokens that need extensions, use [Token-2022](token-2022.md) instead.
+
+If using plugin clients, prefer `client.use(tokenProgram())` for a fluent API that auto-derives ATAs and defaults the payer. The low-level instructions below are for manual `pipe()` transaction building. See [overview.md](../overview.md) and [plugins.md](../plugins.md).
+
 Program address: `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA`
 
 ```ts
@@ -42,6 +46,8 @@ const multisig = await fetchMultisig(rpc, multisigAddress);
 
 ## PDA: Associated Token Account
 
+One deterministic token account per owner per mint. Derived from owner + mint + token program — no on-chain lookup needed. Always prefer ATAs for user-facing flows.
+
 ```ts
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 
@@ -68,6 +74,8 @@ const ix = getInitializeMintInstruction({
 ```
 
 ### Transfer
+
+Prefer `getTransferCheckedInstruction` — validates mint and decimals on-chain, preventing wrong-token transfers.
 
 ```ts
 import { getTransferInstruction, getTransferCheckedInstruction } from '@solana-program/token';
@@ -132,7 +140,7 @@ const ix = getBurnInstruction({
 
 ## Instruction Plans
 
-Instruction plans handle multi-step operations (create ATA if needed, etc).
+Handle multi-step operations (e.g., create ATA if needed). Auto-check preconditions and only include necessary instructions — use for user-facing flows.
 
 ### Create Mint
 
